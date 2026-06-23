@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Local runtime state — the sim self-creates this with defaults if missing
+# (see load_runtime_state() in sim/g1_mujoco_liveknobs.py), so it's purely a
+# live mailbox between the UI and the running sim, not source.
+sim/runtime_state.json
+
+# MuJoCo's own native crash/instability log, written next to the cwd
+# whenever the sim hits a NaN/Inf/huge QACC warning. Local debugging noise.
+MUJOCO_LOG.TXT
+
+# Outputs of the text-to-motion generation pipeline (kimodo_bridge/generate_motion.py
+# writes here, named from the prompt + timestamp). Regenerable per-run artifacts,
+# not curated workshop content — keep motions/pre_staged/ instead.
+motions/generated/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

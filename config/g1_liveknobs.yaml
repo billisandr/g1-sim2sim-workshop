@@ -1,0 +1,99 @@
+# Central config for the G1 live-knobs workshop.
+#
+# Values under `policy:` are a curated copy of unitree_rl_gym's
+# deploy/deploy_mujoco/configs/g1.yaml (verified working on this project's
+# G1 23-DOF / 12-leg-joint locomotion policy — see
+# g1-rl-sim2sim-workshop-PLAN.md §1, §3.5). Values under `knobs:` are new
+# for this workshop and define the live slider ranges in ui/workshop_ui.py.
+#
+# This file is read once at sim startup. Anything that must change without
+# relaunching the sim (vx/vy/yaw/pd_scale/action_scale/push) lives in
+# sim/runtime_state.json instead, written live by the Streamlit UI.
+
+robot: "Unitree G1 23-DOF (EDU Standard), 12 leg joints actuated by this policy"
+
+policy:
+  xml_path: "assets/g1_description/scene.xml"
+  default_policy_path: "motions/pre_staged/g1_walk_policy.pt"
+
+  simulation_dt: 0.002
+  control_decimation: 10
+
+  kps: [100, 100, 100, 150, 40, 40, 100, 100, 100, 150, 40, 40]
+  kds: [2, 2, 2, 4, 2, 2, 2, 2, 2, 4, 2, 2]
+
+  default_angles: [-0.1, 0.0, 0.0, 0.3, -0.2, 0.0,
+                    -0.1, 0.0, 0.0, 0.3, -0.2, 0.0]
+
+  ang_vel_scale: 0.25
+  dof_pos_scale: 1.0
+  dof_vel_scale: 0.05
+  action_scale: 0.25
+  cmd_scale: [2.0, 2.0, 0.25]
+  num_actions: 12
+  num_obs: 47
+
+motion_clip:
+  # Multiple motion sources use DIFFERENT skeletons that are NOT
+  # interchangeable, despite some sharing the same nq (column count) by
+  # coincidence — nq alone can't disambiguate them, so each clip's skeleton
+  # is resolved from its filename prefix below. See PLAN.md §3.4 (Kimodo
+  # vs. the locomotion policy's XML) and hf/g1_moves_convert.py (the
+  # exptech/g1-moves dataset's 29-DOF skeleton).
+  skeletons:
+    kimodo:
+      xml_path: "assets/g1skel34_kimodo/xml/g1.xml"
+    g1_29dof:
+      xml_path: "assets/g1_description/g1_29dof.xml"
+  # First matching prefix wins; "" (empty prefix) always matches, so keep
+  # it last as the fallback.
+  skeleton_by_prefix:
+    - prefix: "g1_moves_"
+      skeleton: g1_29dof
+    - prefix: ""
+      skeleton: kimodo
+  default_motion_path: "motions/pre_staged/g1_walk_kimodo.csv"
+  playback_fps: 30
+
+# A third mode (mode: "motion_tracking" in runtime_state.json): an
+# imitation-trained policy from exptech/g1-moves that performs ONE fixed
+# reference routine through real PD-driven physics — see
+# sim/motion_tracking.py's module docstring for the full background, and
+# docs/HUGGINGFACE_GUIDE.md §3.4 for why this is a third category, not a
+# variant of "policy" or "motion_clip". Uses the same 29-DOF skeleton as
+# the g1_moves_ motion clips (assets/g1_description/g1_29dof.xml), but
+# actuated rather than kinematically played back. Per-joint PD gains,
+# action scale, and default pose live in sim/motion_tracking.py as code
+# constants (confirmed identical across two different clips' env.yaml, so
+# they're robot-level constants, not per-clip tuning) — this section only
+# holds the structural paths/timing.
+motion_tracking:
+  xml_path: "assets/g1_description/g1_29dof.xml"
+  simulation_dt: 0.005
+  control_decimation: 4
+  default_tracking_dir: "motions/pre_staged/tracking/M_ShortMove12"
+
+# Knob ranges shown as Streamlit sliders. (min, max, step, default)
+knobs:
+  vx:
+    label: "Forward speed (vx, m/s)"
+    range: [-1.5, 1.5, 0.05, 0.5]
+  vy:
+    label: "Sideways speed (vy, m/s)"
+    range: [-0.5, 0.5, 0.05, 0.0]
+  yaw:
+    label: "Turn rate (yaw, rad/s)"
+    range: [-1.0, 1.0, 0.05, 0.0]
+  pd_scale:
+    label: "Joint stiffness multiplier (pd_scale)"
+    range: [0.3, 2.0, 0.05, 1.0]
+    help: "Multiplies kps/kds together. Below ~0.6 the robot goes floppy; above ~1.5 it gets jerky."
+  action_scale:
+    label: "Gait temperament (action_scale)"
+    range: [0.05, 0.6, 0.01, 0.25]
+    help: "Lower = calmer/smaller steps, higher = twitchier/larger steps."
+  push_impulse:
+    label: "Push strength (N·s, applied to torso on button press)"
+    range: [0.0, 400.0, 10.0, 150.0]
+
+runtime_state_path: "sim/runtime_state.json"
