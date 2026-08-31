@@ -1,32 +1,33 @@
 """
 Thin wrapper around Kimodo's `kimodo_gen` CLI for the live-knobs workshop.
 
-Wraps the verified command from g1-rl-sim2sim-workshop-PLAN.md §1.4:
+Wraps the verified `kimodo_gen` command:
 
     TEXT_ENCODER_4BIT=1 kimodo_gen "<prompt>" --model Kimodo-G1-RP-v1 \
         --duration <seconds> --num_samples 1 --diffusion_steps 50 \
         --seed <seed> --output <output_stem>
 
-Same environment as the rest of this workshop (/root/venvs/kimodo, WSL2,
-no Docker/cross-environment interop — see PLAN.md §3.2), so this is a plain
-subprocess call, not a remote/container bridge.
+Same environment as the rest of this workshop (/root/venvs/kimodo, WSL2, no
+Docker): this workshop runs everything natively in one WSL2 distro rather
+than bridging across containers, so this is a plain subprocess call, not a
+remote/container bridge.
 
 Kimodo's output skeleton (g1skel34, nq=36) is NOT the same as the
-locomotion policy's skeleton (g1_12dof, nq=19) — see PLAN.md §3.4 and
-config/g1_liveknobs.yaml's motion_clip section. Generated clips only work
-in motion-clip playback mode, never as a policy.
+locomotion policy's skeleton (g1_12dof, nq=19) — see config/g1_liveknobs.yaml's
+motion_clip section. Generated clips only work in motion-clip playback mode,
+never as a policy.
 
 Memory safety: the text encoder's load is a real, multi-GB transient even
-with the 4-bit GPU patch (see PLAN.md §1.4). On a memory-constrained host,
+with the 4-bit GPU patch applied. On a memory-constrained host,
 running this while sim/g1_mujoco_liveknobs.py is also active has caused
 full-machine freezes rather than a clean error — generate_motion() checks
 for both low memory and a concurrently-running sim up front and refuses
 with a clear message instead of risking that.
 
 Every invocation writes a full stdout/stderr logfile plus a short status
-report to LOG_DIR, which lives on the WSL2 Linux filesystem (not /mnt/e —
-cross-OS 9p file access is slow for repeated I/O, see PLAN.md §1.6). The
-same report is returned to the caller so the UI can show it next to the
+report to LOG_DIR, which lives on the WSL2 Linux filesystem (not /mnt/e,
+since cross-OS 9p file access is slow for repeated I/O). The same report
+is returned to the caller so the UI can show it next to the
 "Generated: ..." message.
 """
 
@@ -42,9 +43,9 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(THIS_DIR)
 GENERATED_DIR = os.path.join(PROJECT_ROOT, "motions", "generated")
 
-# Logs live on the WSL2 Linux filesystem, not /mnt/e — see PLAN.md §1.6.
-# Override with G1_LIVEKNOBS_LOG_DIR if /root isn't appropriate on a given
-# machine.
+# Logs live on the WSL2 Linux filesystem, not /mnt/e, since cross-OS 9p
+# file access is slow for repeated I/O. Override with G1_LIVEKNOBS_LOG_DIR
+# if /root isn't appropriate on a given machine.
 LOG_DIR = os.environ.get("G1_LIVEKNOBS_LOG_DIR", "/root/g1_liveknobs_logs/kimodo_gen")
 
 DEFAULT_MODEL = "Kimodo-G1-RP-v1"
@@ -130,11 +131,11 @@ def generate_motion(
     duration, diffusion steps, seed, wall-clock generation time) — the same
     one written to the end of the logfile at `log_path`.
 
-    Blocking — encoder load+encode alone took ~37s in verification (see
-    PLAN.md §1.4), before diffusion sampling. Callers driving this from a
-    UI should show a spinner/progress message, not assume this returns
-    quickly. Intended as a Stage-1 "watch it happen once, live" demo, not
-    something every participant runs in parallel (per PLAN.md §3.3).
+    Blocking — encoder load+encode alone took ~37s in verification, before
+    diffusion sampling. Callers driving this from a UI should show a
+    spinner/progress message, not assume this returns quickly. Intended as
+    a Stage-1 "watch it happen once, live" demo, not something every
+    participant runs in parallel.
 
     Raises GenerationError up front, before spending the ~30-40s on the
     load, if there isn't enough free RAM or if the sim looks like it's

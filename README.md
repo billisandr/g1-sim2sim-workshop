@@ -1,112 +1,111 @@
 # G1 RL Live-Knobs Workshop
 
-A **non-coder** workshop for the Unitree G1 (23-DOF EDU Standard, no
-grippers): turn live sliders, watch a walking policy react in a MuJoCo
-viewer, then an instructor uploads the validated policy to the real robot.
-No code editing required — every "exercise" is a slider, dropdown, or
-button in a browser tab.
+A non-coder workshop built around the Unitree G1 (23-DOF EDU Standard, no
+grippers). Participants turn live sliders, watch a walking policy react in a
+MuJoCo viewer, and an instructor uploads the validated policy to the real
+robot at the end. Nobody edits code. Every "exercise" is a slider, a
+dropdown, or a button in a browser tab.
 
-This is the non-coder sibling of
-[`g1-policy-deploy-workshop`](../g1-policy-deploy-workshop/) (the coding
-exercise covering the same train→validate→deploy arc), and reuses the
-Hugging Face browsing idea from
-[`g1-policy-literacy-workshop`](../g1-policy-literacy-workshop/). It's
-modeled structurally on
-[`ros_z1_sim_marker-real-camera`](../ros_z1_sim_marker-real-camera/)'s
-live-knobs Streamlit UI, but runs **WSL2-only, no Docker** (see
-[Runtime environment](#runtime-environment-wsl2-only-no-docker) below).
+It's one of three related G1 workshops built for the same lab: this one
+(no coding, live sliders), a coding-exercise sibling that walks through the
+same train-validate-deploy arc in code, and a policy-literacy workshop built
+around browsing Hugging Face. This repo borrows the Hugging Face browsing
+idea from that third one, and its live-knobs Streamlit UI is modeled on an
+earlier robot-arm workshop's reflex-tuning interface. None of those other
+repos are included here.
 
----
+## Why WSL2 and not Docker
 
-## Runtime environment: WSL2-only, no Docker
+The whole thing runs inside WSL2 (Ubuntu-22.04), reusing an existing Python
+venv. There's no Dockerfile anywhere in this repo, and that's a deliberate
+choice, not an oversight.
 
-This workshop runs entirely inside **WSL2 (Ubuntu-22.04)**, reusing the
-venv at `/root/venvs/kimodo`. There is **no Dockerfile** and no container
-for any part of it.
+The reason is GPU support. This project's text-to-motion generation
+(NVIDIA's Kimodo) only installs cleanly in WSL2 on the hardware it was built
+on. Native Windows doesn't have the right Python version or C++ build chain
+for it. Once WSL2 was already set up and GPU-verified, putting Docker on top
+would have meant re-proving GPU passthrough and X11 forwarding through a
+third layer, for no real benefit, since WSL2 and WSLg already handle both
+natively on this machine.
 
-Why: this project's GPU work (NVIDIA Kimodo, text-to-motion generation)
-only installs successfully in WSL2 on this hardware — native Windows lacks
-the right Python version and C++ build chain. Once WSL2 was already set up
-and GPU-verified there, adding Docker on top would mean re-proving GPU
-passthrough and X11/GUI forwarding through a third layer for no functional
-benefit — WSL2/WSLg already does both natively on this machine.
+The trade-off is portability. Moving this workshop to a different lab
+machine means redoing the WSL2 setup below, not just running `docker build`.
+If that portability ever becomes a real requirement, Docker is worth
+revisiting then, but it wasn't worth the setup cost up front for a
+single-machine workshop.
 
-**Trade-off accepted:** this workshop is less portable to a different lab
-machine than a Dockerized workshop would be. A new machine needs to redo
-the WSL2 setup (see [Setup](#setup) below), not just `docker build`. If
-portability becomes a real requirement, Docker can be revisited then.
+## What participants actually do
 
----
+**1. Get a walking motion or policy.** Pick the pre-staged one, which
+always works and needs no internet or GPU. Or browse Hugging Face for a
+published one (mock mode by default, so nobody worries about breaking
+anything). Or generate a brand-new motion live with NVIDIA's Kimodo
+text-to-motion model from a text prompt.
 
-## What participants do
+**2. Watch it move in the MuJoCo viewer** while turning live knobs: forward
+speed, turn rate, joint stiffness, gait temperament, push disturbance. The
+robot reacts in real time. No relaunch needed between changes.
 
-1. **Get a walking motion or policy** — pick the pre-staged one (always
-   works, no internet/GPU needed), browse Hugging Face for a published one
-   (mock mode by default), or generate a brand-new motion live with
-   NVIDIA's Kimodo text-to-motion model from a text prompt.
-2. **Watch it in the MuJoCo viewer** while turning live knobs — forward
-   speed, turn rate, joint stiffness, gait temperament, push disturbance —
-   and see the robot react in real time, no relaunch needed.
-3. **An instructor uploads the validated policy to the real, physical G1**,
-   following the safety ritual in
-   [`G1_RL_Training_and_Deployment_Guide.md`](../../G1_RL_Training_and_Deployment_Guide.md)
-   at the repo root.
+**3. An instructor uploads the validated policy to the real, physical G1**,
+following the safety procedure in
+[docs/REAL_ROBOT_UPLOAD.md](docs/REAL_ROBOT_UPLOAD.md).
 
-Three different "things" can be loaded, and the UI treats them differently
-— see `0.Plan&Docs/g1-rl-sim2sim-workshop-PolicyDiversity-PLAN.md` for why
-clips (cheap, no GPU) vastly outnumber policies (real RL training, or
-finding someone else's already-trained checkpoint) in this workshop:
+Three different kinds of things can be loaded here, and the UI treats them
+differently on purpose:
 
 - A **live policy** (a neural net, `.pt`) reacts to your vx/vy/yaw/stiffness
-  knobs — this is the "you are the joystick" experience. One pre-staged
-  example: `motions/pre_staged/g1_walk_policy.pt`.
-- A **recorded motion clip** (Kimodo's output, or an `exptech/g1-moves`
-  retarget, `.csv`) is a fixed sequence of poses — it has no velocity input
-  to react to. The UI disables the velocity knobs and shows a play/pause/
-  scrub control instead when a clip is selected. 12 pre-staged clips as of
-  this writing.
-- An **imitation-tracking policy** (`motions/pre_staged/tracking/<clip>/`)
-  is also a neural net, but trained to perform ONE specific reference
-  routine rather than react to vx/vy/yaw — it's a real PD-driven
-  simulation (reacts to pushes, in Group C), just locked to one routine
-  instead of being a general controller. See
-  [docs/HUGGINGFACE_GUIDE.md](docs/HUGGINGFACE_GUIDE.md) §3.4 and
-  `sim/motion_tracking.py`'s module docstring for the full background —
-  this is `exptech/g1-moves`'s own per-clip `policy/` output, not
-  hypothetical.
+  knobs. This is the "you are the joystick" mode. One pre-staged example
+  ships in the repo: `motions/pre_staged/g1_walk_policy.pt`.
+- A **recorded motion clip** (Kimodo's output, or a retargeted mocap clip
+  from `exptech/g1-moves`, `.csv`) is a fixed sequence of poses. It has no
+  velocity input to react to, so the UI disables the velocity knobs and
+  shows a play/pause/scrub control instead when a clip is selected. Twelve
+  pre-staged clips ship as of this writing.
+- An **imitation-tracking policy**
+  (`motions/pre_staged/tracking/<clip>/`) is also a neural net, but trained
+  to perform one specific reference routine rather than react to
+  vx/vy/yaw. It's a real PD-driven simulation, so it reacts to pushes the
+  same as the live policy does, just locked to one routine instead of
+  general commands. See
+  [docs/HUGGINGFACE_GUIDE.md](docs/HUGGINGFACE_GUIDE.md) section 3.4 and
+  the module docstring in `sim/motion_tracking.py` for the full story on
+  where this data came from.
+
+Clips vastly outnumber policies in this workshop, and that's not an
+accident. A clip is cheap: retarget the mocap data, fix the quaternion
+convention, done. A policy needs real RL training hours on a GPU, or finding
+someone else's already-trained checkpoint. The file counts on disk are a
+pretty honest picture of that cost difference, and it's worth pointing out
+to participants directly.
 
 Pretending a fixed clip or a single-routine policy responds to vx/vy/yaw
-commands would be misleading, so the UI is explicit about which of the
-three modes is active.
-
----
+commands would be misleading, so the UI stays explicit about which of the
+three modes is active at any time.
 
 ## Setup
 
 From a Windows terminal:
 
 ```powershell
-wsl.exe -d Ubuntu-22.04 -u root -- bash /mnt/e/SenseLAB_TUC/Projects/SpaceSmSc/2.CodeRepos/g1-sim2sim-workshop/setup_wsl_env.sh
+wsl.exe -d Ubuntu-22.04 -u root -- bash /path/to/g1-sim2sim-workshop/setup_wsl_env.sh
 ```
 
-This assumes `/root/venvs/kimodo` already exists (Kimodo's own install —
-see [docs/STARTUP.md](docs/STARTUP.md) if it doesn't yet) and adds
-`mujoco`, `streamlit`, `pyyaml`, `huggingface_hub` to it.
+This assumes a Python venv with Kimodo already installed exists in WSL2 (see
+[docs/STARTUP.md](docs/STARTUP.md) if it doesn't yet), and adds `mujoco`,
+`streamlit`, `pyyaml`, and `huggingface_hub` to it.
 
 ## Running it
 
-Two terminals, both inside WSL2 (`wsl.exe -d Ubuntu-22.04`):
+Two terminals, both inside WSL2:
 
 ```bash
 g1_sim    # opens the MuJoCo viewer window (via WSLg)
 g1_ui     # starts the Streamlit knobs UI at http://localhost:8501
 ```
 
-(`g1_sim`/`g1_ui` are shell aliases added to `~/.bashrc` during setup — see
-[docs/STARTUP.md](docs/STARTUP.md) for the full reference if you need to
-run the underlying commands directly.)
-
----
+`g1_sim` and `g1_ui` are shell aliases added to `~/.bashrc` during setup.
+See [docs/STARTUP.md](docs/STARTUP.md) for the full reference if you'd
+rather run the underlying commands directly.
 
 ## Architecture
 
@@ -130,57 +129,61 @@ tests/smoke_test_motion_tracking.py — headless: same, for the imitation-tracki
 The sim loop is adapted from `unitree_rl_gym`'s
 `deploy/deploy_mujoco/deploy_mujoco.py` reference loop, parameterized so
 `vx`/`vy`/`yaw`/`pd_scale`/`action_scale`/`push` come from
-`runtime_state.json` instead of being fixed at startup.
+`runtime_state.json` instead of being fixed at startup. See
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for attribution.
 
-**Three skeletons, not one:** the locomotion policy uses a 12-leg-joint
-skeleton (`assets/g1_description/g1_12dof.xml`, nq=19) from
-`unitree_rl_gym`. Motion clips use one of two other, full-body skeletons
-that are **not interchangeable with each other or with the policy's**,
-despite two of them sharing the same nq by coincidence:
+### Three skeletons, not one
+
+The locomotion policy uses a 12-leg-joint skeleton
+(`assets/g1_description/g1_12dof.xml`, nq=19) from `unitree_rl_gym`. Motion
+clips use one of two other, full-body skeletons that aren't interchangeable
+with each other or with the policy's, even though two of them share the
+same nq by coincidence:
+
 - Kimodo's own 34-joint animation rig (`assets/g1skel34_kimodo/`, nq=36).
 - The real Unitree G1 29-DOF skeleton (`assets/g1_description/g1_29dof.xml`,
-  also nq=36) used by the `exptech/g1-moves` mocap clips — see
+  also nq=36), used by the `exptech/g1-moves` mocap clips. See
   [docs/HUGGINGFACE_GUIDE.md](docs/HUGGINGFACE_GUIDE.md) for how those were
   sourced and converted.
 
-A clip can only be played back on the skeleton it was made for,
-kinematically (`qpos` set directly each frame), never run through the
-policy's PD controller. `sim/g1_mujoco_liveknobs.py` resolves which
-skeleton a clip needs from its filename prefix
-(`config/g1_liveknobs.yaml`'s `motion_clip.skeleton_by_prefix`) — nq
-matching alone isn't enough to tell two same-sized but different
-skeletons apart.
-
----
+A clip can only play back on the skeleton it was made for, kinematically
+(`qpos` set directly each frame), and never runs through the policy's PD
+controller. `sim/g1_mujoco_liveknobs.py` resolves which skeleton a clip
+needs from its filename prefix
+(`config/g1_liveknobs.yaml`'s `motion_clip.skeleton_by_prefix`), since nq
+matching alone can't tell two same-sized but different skeletons apart.
 
 ## Documentation
 
 - [docs/STARTUP.md](docs/STARTUP.md) — full run reference (setup, launch, config)
-- [docs/KNOBS_CHEATSHEET.md](docs/KNOBS_CHEATSHEET.md) — what each knob does + what to say
-- [docs/REAL_ROBOT_UPLOAD.md](docs/REAL_ROBOT_UPLOAD.md) — both real-robot upload paths
+- [docs/KNOBS_CHEATSHEET.md](docs/KNOBS_CHEATSHEET.md) — what each knob does and what to say
+- [docs/REAL_ROBOT_UPLOAD.md](docs/REAL_ROBOT_UPLOAD.md) — safety procedure and both real-robot upload paths
 - [docs/HUGGINGFACE_GUIDE.md](docs/HUGGINGFACE_GUIDE.md) — how Hugging Face repos work, the `exptech/g1-moves` motion clips in depth, and a reusable prompt for adding more sources
 - [INSTRUCTORS_GUIDE.md](INSTRUCTORS_GUIDE.md) — pre-flight, timing, per-stage notes, safety
 
----
-
 ## Safety
 
-The real-robot stage always defers to
-[`G1_RL_Training_and_Deployment_Guide.md`](../../G1_RL_Training_and_Deployment_Guide.md)
-at the repo root — hoist, two-person rule, debug mode (L2+R2). This
-workshop's sim2sim stage (knobs + MuJoCo viewer) is the validation gate
-before anyone touches hardware: if the policy doesn't look stable under
-slider changes and pushes here, it does not go on the real robot.
-
----
+The real-robot stage is always instructor-only and always follows the
+procedure in [docs/REAL_ROBOT_UPLOAD.md](docs/REAL_ROBOT_UPLOAD.md): hoist,
+two-person rule, debug mode via the remote's L2+R2 combo. This workshop's
+sim2sim stage (knobs plus the MuJoCo viewer) is the validation gate before
+anyone touches hardware. If a policy doesn't hold up under slider changes
+and pushes here, it doesn't go on the real robot, full stop.
 
 ## Troubleshooting
 
 | Problem | Fix |
 | ------- | --- |
-| Viewer window never appears | Confirm `DISPLAY` is set (WSLg sets this automatically in an interactive WSL2 session) and that you're running inside WSL2, not native Windows Python |
-| `ModuleNotFoundError: mujoco`/`streamlit`/etc. | Re-run `setup_wsl_env.sh`, or confirm you activated `/root/venvs/kimodo` |
-| Kimodo "Generate" button hangs for a long time | Expected — encoder load+encode alone takes ~30-40s, before diffusion sampling. See [docs/KNOBS_CHEATSHEET.md](docs/KNOBS_CHEATSHEET.md) |
-| Motion clip fails with an `nq` mismatch error | You loaded a Kimodo clip while in policy mode, or vice versa — switch modes in the selector tab first |
-| Tracking mode has no policies to pick | Download one: `python3 hf/g1_moves_tracking_convert.py <ClipName> <category>` (see [docs/HUGGINGFACE_GUIDE.md](docs/HUGGINGFACE_GUIDE.md) §3.4) |
-| Real-robot step | Not verifiable in a dev sandbox — needs the physical G1, hoist, and a second person. See [docs/REAL_ROBOT_UPLOAD.md](docs/REAL_ROBOT_UPLOAD.md) |
+| Viewer window never appears | Confirm `DISPLAY` is set (WSLg sets this automatically in an interactive WSL2 session), and that you're running inside WSL2, not native Windows Python |
+| `ModuleNotFoundError: mujoco`/`streamlit`/etc. | Re-run `setup_wsl_env.sh`, or confirm you activated the right venv |
+| Kimodo "Generate" button hangs for a while | Expected. Encoder load and encode alone take ~30-40s, before diffusion sampling even starts. See [docs/KNOBS_CHEATSHEET.md](docs/KNOBS_CHEATSHEET.md) |
+| Motion clip fails with an `nq` mismatch error | You loaded a Kimodo clip while in policy mode, or vice versa. Switch modes in the selector tab first |
+| Tracking mode has no policies to pick | Download one: `python3 hf/g1_moves_tracking_convert.py <ClipName> <category>` (see [docs/HUGGINGFACE_GUIDE.md](docs/HUGGINGFACE_GUIDE.md) section 3.4) |
+| Real-robot step isn't working | Not verifiable in a dev sandbox. Needs the physical G1, a hoist, and a second person. See [docs/REAL_ROBOT_UPLOAD.md](docs/REAL_ROBOT_UPLOAD.md) |
+
+## License
+
+MIT for this repo's own code, see [LICENSE](LICENSE). Bundled third-party
+assets (the G1 robot description, the `exptech/g1-moves` motion data) carry
+their own separate licenses, listed in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

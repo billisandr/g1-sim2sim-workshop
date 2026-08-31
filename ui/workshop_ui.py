@@ -5,9 +5,9 @@ Workshop UI — live knobs for the G1 sim2sim demo.
 A browser-based control panel (Streamlit) for non-coders. Sliders and
 buttons write straight to sim/runtime_state.json; sim/g1_mujoco_liveknobs.py
 re-reads that file every control tick, so the robot's behaviour changes
-WITHOUT relaunching the simulation (same file-driven philosophy as
-ros_z1_sim_marker-real-camera's workshop_ui.py, which writes to the ROS
-parameter server instead — see g1-rl-sim2sim-workshop-PLAN.md §3.3).
+WITHOUT relaunching the simulation (the same file-driven philosophy as an
+earlier robot-arm workshop's own UI, which wrote to the ROS parameter
+server instead).
 
 Run from WSL2, in a separate terminal from the sim:
 

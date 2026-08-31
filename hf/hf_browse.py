@@ -4,11 +4,10 @@ Hugging Face Hub browsing helper for the G1 live-knobs workshop.
 Set MOCK_HF=1 (the default) to run fully offline against canned fixture
 data — no Hugging Face account, token, or internet connection needed.
 Set MOCK_HF=0 for the real Hugging Face Hub API (the user's existing
-`hf auth login` session is reused automatically — see
-g1-rl-sim2sim-workshop-PLAN.md §1.2).
+`hf auth login` session is reused automatically).
 
-Ported from g1-policy-literacy-workshop/workshop/hf_helper.py — duplicated
-rather than imported across workshops so this one stays self-contained.
+Adapted from a sibling workshop's hf_helper.py — duplicated rather than
+imported across workshops so this one stays self-contained.
 """
 
 import os
@@ -59,8 +58,8 @@ _MOCK_MODELS = [
         "description": (
             "Illustrative stand-in for a published quadruped locomotion "
             "policy. Same action_dim as the G1 build by coincidence, but "
-            "the wrong embodiment — a good example for the compatibility "
-            "lesson from g1-policy-literacy-workshop."
+            "the wrong embodiment: a good example of why matching "
+            "action_dim alone doesn't mean a policy is actually compatible."
         ),
     },
 ]

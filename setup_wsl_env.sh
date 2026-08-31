@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 # One-shot environment setup for the G1 live-knobs workshop.
 #
-# WSL2-only, no Docker (see g1-rl-sim2sim-workshop-PLAN.md §3.2): this
+# WSL2-only, no Docker (see README.md, "Why WSL2 and not Docker"): this
 # workshop reuses the existing Kimodo venv at /root/venvs/kimodo rather than
-# creating a second one, and runs natively under WSLg (GPU passthrough + X11
-# GUI forwarding already proven working there for Kimodo). Run this from
+# creating a second one, and runs natively under WSLg (GPU passthrough and
+# X11 GUI forwarding already proven working there for Kimodo). Run this from
 # inside the WSL2 Ubuntu-22.04 distro, as root:
 #
-#   wsl.exe -d Ubuntu-22.04 -u root -- bash /mnt/e/.../g1-sim2sim-workshop/setup_wsl_env.sh
+#   wsl.exe -d Ubuntu-22.04 -u root -- bash /path/to/g1-sim2sim-workshop/setup_wsl_env.sh
 #
 # or copy it to the Linux filesystem first (recommended for anything you'll
-# re-run often — see PLAN.md §1.6 on 9p filesystem performance).
+# re-run often, since cross-OS file access over 9p is slow).
 
 set -euo pipefail
 
@@ -18,7 +18,7 @@ VENV=/root/venvs/kimodo
 
 if [ ! -x "$VENV/bin/python3" ]; then
   echo "ERROR: $VENV does not exist or has no python3." >&2
-  echo "This script assumes the Kimodo venv from g1-rl-sim2sim-workshop-PLAN.md §1.5 already exists." >&2
+  echo "This script assumes the Kimodo venv already exists." >&2
   exit 1
 fi
 

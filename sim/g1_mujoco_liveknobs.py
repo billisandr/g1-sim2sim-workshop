@@ -1,10 +1,9 @@
 """
 G1 live-knobs sim loop.
 
-Adapts unitree_rl_gym's deploy/deploy_mujoco/deploy_mujoco.py loop (see
-g1-rl-sim2sim-workshop-PLAN.md §3.4) to read live knobs from
-sim/runtime_state.json every control tick instead of using fixed constants,
-and adds a second playback mode for Kimodo motion clips.
+Adapts unitree_rl_gym's deploy/deploy_mujoco/deploy_mujoco.py loop to read
+live knobs from sim/runtime_state.json every control tick instead of using
+fixed constants, and adds a second playback mode for Kimodo motion clips.
 
 Two modes, selected via runtime_state.json's "mode" field:
 
@@ -17,9 +16,9 @@ Two modes, selected via runtime_state.json's "mode" field:
   this mode (the UI greys them out and shows a scrub bar instead).
 
 These two modes use different MuJoCo skeletons (different nq) — see
-config/g1_liveknobs.yaml's comment on policy.xml_path vs motion_clip.xml_path
-and PLAN.md §3.4 for why a Kimodo clip cannot be played back on the policy's
-12-leg-joint XML.
+config/g1_liveknobs.yaml's comment on policy.xml_path vs motion_clip.xml_path.
+A Kimodo clip cannot be played back on the policy's 12-leg-joint XML because
+the joint counts and ordering don't match.
 
 Run from WSL2 (needs WSLg for the passive viewer window):
     source /root/venvs/kimodo/bin/activate

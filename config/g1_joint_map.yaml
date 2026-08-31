@@ -1,7 +1,7 @@
-# Unitree G1 EDU Standard — 23 DOF, no grippers.
+# Unitree G1 EDU Standard, 23 DOF, no grippers.
 #
-# Same descriptor as g1-policy-literacy-workshop/workshop/data/g1_joint_map.yaml
-# — duplicated intentionally so this workshop stays self-contained.
+# Same descriptor as a sibling workshop's own g1_joint_map.yaml, duplicated
+# intentionally so this workshop stays self-contained.
 
 robot: "Unitree G1 23-DOF (EDU Standard)"
 total_dof: 23
@@ -13,7 +13,7 @@ joint_groups:
     joints_per_leg: [hip_pitch, hip_roll, hip_yaw, knee, ankle_pitch, ankle_roll]
     note: >
       The only joints the unitree_rl_gym velocity-walking policy actuates.
-      See G1_RL_Training_and_Deployment_Guide.md at the SpaceMineSS repo root.
+      See docs/REAL_ROBOT_UPLOAD.md for the real-robot deployment procedure.
   waist:
     dof: 1
     joints: [waist_yaw]

@@ -4,7 +4,7 @@ Headless smoke test for the G1 live-knobs workshop.
 No display, no robot needed. Loads the pre-staged policy and XML, steps the
 sim for N ticks under a fixed forward-walk command, and asserts the torso
 stays above a fall threshold. This is the only piece of the workshop that's
-runtime-verifiable without WSLg/a display (see PLAN.md §5).
+runtime-verifiable without WSLg/a display.
 
 Run from WSL2:
     source /root/venvs/kimodo/bin/activate

@@ -2,8 +2,7 @@
 #
 # Values under `policy:` are a curated copy of unitree_rl_gym's
 # deploy/deploy_mujoco/configs/g1.yaml (verified working on this project's
-# G1 23-DOF / 12-leg-joint locomotion policy — see
-# g1-rl-sim2sim-workshop-PLAN.md §1, §3.5). Values under `knobs:` are new
+# G1 23-DOF / 12-leg-joint locomotion policy). Values under `knobs:` are new
 # for this workshop and define the live slider ranges in ui/workshop_ui.py.
 #
 # This file is read once at sim startup. Anything that must change without
@@ -37,9 +36,9 @@ motion_clip:
   # Multiple motion sources use DIFFERENT skeletons that are NOT
   # interchangeable, despite some sharing the same nq (column count) by
   # coincidence — nq alone can't disambiguate them, so each clip's skeleton
-  # is resolved from its filename prefix below. See PLAN.md §3.4 (Kimodo
-  # vs. the locomotion policy's XML) and hf/g1_moves_convert.py (the
-  # exptech/g1-moves dataset's 29-DOF skeleton).
+  # is resolved from its filename prefix below. Kimodo's skeleton and the
+  # locomotion policy's XML are not interchangeable; see also
+  # hf/g1_moves_convert.py for the exptech/g1-moves dataset's 29-DOF skeleton.
   skeletons:
     kimodo:
       xml_path: "assets/g1skel34_kimodo/xml/g1.xml"

@@ -237,7 +237,7 @@ code" convention `hf/g1_moves_convert.py` already uses for clips.
 
 ```bash
 source /root/venvs/kimodo/bin/activate
-cd 2.CodeRepos/g1-sim2sim-workshop
+cd g1-sim2sim-workshop
 python3 hf/g1_moves_convert.py <ClipName> <category>
 # e.g.: python3 hf/g1_moves_convert.py J_Dance2_Salsa dance
 ```
@@ -250,9 +250,9 @@ in `ui/workshop_ui.py` just lists every `.csv` in `motions/pre_staged/`
 and `motions/generated/`; no per-clip UI code is needed).
 
 The skeleton it needs (`assets/g1_description/g1_29dof.xml`, the real
-Unitree 29-DOF G1, already present in this project from when the original
-locomotion policy was acquired — see the main PLAN.md §3.5) is resolved
-automatically by `sim/g1_mujoco_liveknobs.py`'s `_resolve_skeleton_xml()`,
+Unitree 29-DOF G1, already present in this repo alongside the original
+locomotion policy) is resolved automatically by
+`sim/g1_mujoco_liveknobs.py`'s `_resolve_skeleton_xml()`,
 which matches the filename prefix `g1_moves_` against
 `config/g1_liveknobs.yaml`'s `motion_clip.skeleton_by_prefix` list. This
 matters because **Kimodo's motion clips and these clips both happen to
@@ -347,11 +347,10 @@ source. It encodes the due-diligence steps from §5 as explicit
 instructions, not just a description of what happened.
 
 > I want to add motion clips or a policy from `[HF_OR_GITHUB_URL]` to the
-> `g1-sim2sim-workshop` project at
-> `2.CodeRepos/g1-sim2sim-workshop/`. Read
-> `docs/HUGGINGFACE_GUIDE.md` in that project first — it documents how
-> Hugging Face repos work mechanically and the exact due-diligence steps
-> that already caught three dead-end sources in this project (broken LFS
+> `g1-sim2sim-workshop` repo. Read `docs/HUGGINGFACE_GUIDE.md` in that repo
+> first, since it documents how Hugging Face repos work mechanically and
+> the exact due-diligence steps that already caught three dead-end sources
+> in this project (broken LFS
 > hosting, a hung clone from a typo'd org name, and a model card that
 > disagreed with its own file's actual tensor shapes). Don't skip these
 > checks just because the source looks reputable.
